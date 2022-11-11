@@ -1,4 +1,6 @@
-// An example.
+/*
+An example of multiline comment /* which is recursive */
+*/
 
 var name = "utsho";
 var age = 19.7;

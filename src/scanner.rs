@@ -76,6 +76,8 @@ impl Scanner {
             '/' => {
                 if self.is_match('/') {
                     self.comment();
+                } else if self.is_match('*') {
+                    self.multiline_comment()?;
                 } else {
                     self.add_token_without_literal(TokenType::Slash);
                 }
@@ -120,7 +122,7 @@ impl Scanner {
                 } else if self.is_alpha(current_charecter) {
                     self.make_identifier();
                 } else {
-                    return Err(Error::error(self.line, "Unterminated String"));
+                    return Err(Error::error(self.line, "Invalid charecter"));
                 }
             }
         };
@@ -183,6 +185,39 @@ impl Scanner {
     fn comment(&mut self) {
         while self.peek() != '\n' && !self.is_eof() {
             self.advance();
+        }
+    }
+
+    fn multiline_comment(&mut self) -> Result<(), Error> {
+        loop {
+            if self.is_eof() {
+                return Err(Error::error(self.line, "Unterminated comment"));
+            }
+
+            match self.peek() {
+                '*' => {
+                    self.advance();
+                    if self.is_match('/') {
+                        return Ok(());
+                    }
+                }
+
+                '/' => {
+                    self.advance();
+                    if self.is_match('*') {
+                        self.multiline_comment()?;
+                    }
+                }
+
+                '\n' => {
+                    self.advance();
+                    self.line += 1;
+                }
+
+                _ => {
+                    self.advance();
+                }
+            }
         }
     }
 

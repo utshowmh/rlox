@@ -122,7 +122,7 @@ impl Scanner {
                 } else if self.is_alpha(current_charecter) {
                     self.make_identifier();
                 } else {
-                    return Err(Error::error(self.line, "Invalid charecter"));
+                    return Err(Error::new(self.line, "Invalid charecter"));
                 }
             }
         };
@@ -188,7 +188,7 @@ impl Scanner {
     fn multiline_comment(&mut self) -> Result<(), Error> {
         loop {
             if self.is_eof() {
-                return Err(Error::error(self.line, "Unterminated comment"));
+                return Err(Error::new(self.line, "Unterminated comment"));
             }
 
             match self.peek() {
@@ -252,7 +252,7 @@ impl Scanner {
         }
 
         if self.is_eof() {
-            return Err(Error::error(self.line, "Unterminated String"));
+            return Err(Error::new(self.line, "Unterminated String"));
         }
 
         self.advance(); // covering up the ending qoute

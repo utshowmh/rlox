@@ -4,7 +4,7 @@ pub struct Error {
 }
 
 impl Error {
-    pub fn error(line: usize, message: &str) -> Error {
+    pub fn new(line: usize, message: &str) -> Error {
         Error {
             line,
             message: message.to_string(),

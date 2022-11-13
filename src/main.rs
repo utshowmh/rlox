@@ -2,6 +2,7 @@ mod ast_printer;
 mod error;
 mod expr;
 mod object;
+mod parser;
 mod scanner;
 mod token;
 mod token_type;
@@ -13,7 +14,10 @@ use std::{
 };
 
 use error::Error;
+use parser::Parser;
 use scanner::Scanner;
+
+use crate::ast_printer::AstPrinter;
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = args().collect();
@@ -69,10 +73,11 @@ fn run_file(path: &str) -> io::Result<()> {
 fn run(source: &str) -> Result<(), Error> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens()?;
+    let mut parser = Parser::new(tokens);
+    let expr = parser.parse()?;
+    let printer = AstPrinter {};
 
-    for token in tokens {
-        println!("{:?}", token.to_string());
-    }
+    println!("{:?}", printer.stringify(&expr)?);
 
     Ok(())
 }

@@ -5,6 +5,7 @@ mod interpreter;
 mod object;
 mod parser;
 mod scanner;
+mod statement;
 mod token;
 mod token_type;
 
@@ -75,11 +76,9 @@ fn run(source: &str) -> Result<(), Error> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens()?;
     let mut parser = Parser::new(tokens);
-    let expression = parser.parse()?;
+    let statemets = parser.parse()?;
     let interpreter = Interpreter {};
-    let value = interpreter.interpret(&expression)?;
-
-    println!("{}", value);
+    interpreter.interpret(&statemets)?;
 
     Ok(())
 }

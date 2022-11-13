@@ -4,6 +4,7 @@ use crate::{
         BinaryExpression, Expression, GroupingExpression, LiteralExpression, UnaryExpression,
     },
     object::Object,
+    statement::{ExpressionStatement, PrintStatement, Statement},
     token::Token,
     token_type::TokenType,
 };
@@ -18,19 +19,43 @@ impl Parser {
         Self { tokens, current: 0 }
     }
 
-    pub fn parse(&mut self) -> Result<Expression, Error> {
-        self.expressions()
+    pub fn parse(&mut self) -> Result<Vec<Statement>, Error> {
+        let mut statements = Vec::new();
+
+        while !self.is_at_end() {
+            statements.push(self.statement()?);
+        }
+
+        Ok(statements)
+    }
+
+    fn statement(&mut self) -> Result<Statement, Error> {
+        if self.does_match(&[TokenType::Print]) {
+            self.print_statement()
+        } else {
+            self.expression_statement()
+        }
+    }
+
+    fn print_statement(&mut self) -> Result<Statement, Error> {
+        let value = self.expressions()?;
+
+        self.consume(TokenType::Semicolon, "Expect ';' after value")?;
+
+        Ok(Statement::PrintStatement(PrintStatement::new(value)))
+    }
+
+    fn expression_statement(&mut self) -> Result<Statement, Error> {
+        let value = self.expressions()?;
+
+        self.consume(TokenType::Semicolon, "Expect ';' after value")?;
+
+        Ok(Statement::ExpressionStatement(ExpressionStatement::new(
+            value,
+        )))
     }
 
     fn expressions(&mut self) -> Result<Expression, Error> {
-        // let mut expression = self.equality()?;
-
-        // while self.does_match(&[TokenType::Comma]) {
-        //     expression = self.equality()?;
-        // }
-
-        // Ok(expression)
-
         self.equality()
     }
 
@@ -122,7 +147,10 @@ impl Parser {
             return Ok(Expression::Grouping(GroupingExpression::new(expression)));
         }
 
-        Err(self.parse_error("Does not support this token as primary"))
+        Err(self.parse_error(&format!(
+            "Does not support '{}' as a primary token",
+            self.peek().ttype
+        )))
     }
 
     fn consume(&mut self, ttype: TokenType, message: &str) -> Result<Token, Error> {

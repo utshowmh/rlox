@@ -1,0 +1,6 @@
+// arithmetics
+
+print 210 + 210;
+print 960 - 540;
+print 100 * 4.2;
+print 840 / 2;

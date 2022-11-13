@@ -1,15 +1,23 @@
 use crate::{
     error::{Error, ErrorType},
-    expression::{Expression, ExpressionVisitor},
+    expression::{Expression, ExpressionVisitor, LiteralExpression},
     object::Object,
+    statement::{ExpressionStatement, PrintStatement, Statement, StatementVisitor},
     token_type::TokenType,
 };
 
 pub struct Interpreter {}
 
 impl Interpreter {
-    pub fn interpret(&self, expression: &Expression) -> Result<Object, Error> {
-        self.evaluate(expression)
+    pub fn interpret(&self, statements: &[Statement]) -> Result<(), Error> {
+        for statement in statements {
+            self.execute(statement)?;
+        }
+        Ok(())
+    }
+
+    fn execute(&self, statement: &Statement) -> Result<Object, Error> {
+        statement.accept(self)
     }
 
     fn evaluate(&self, expression: &Expression) -> Result<Object, Error> {
@@ -21,11 +29,21 @@ impl Interpreter {
     }
 }
 
+impl StatementVisitor<Object> for Interpreter {
+    fn visit_expression_statement(&self, statement: &ExpressionStatement) -> Result<Object, Error> {
+        let value = self.evaluate(&statement.expression)?;
+        Ok(value)
+    }
+
+    fn visit_print_statement(&self, statement: &PrintStatement) -> Result<Object, Error> {
+        let value = self.evaluate(&statement.expression)?;
+        println!("{}", value);
+        Ok(value)
+    }
+}
+
 impl ExpressionVisitor<Object> for Interpreter {
-    fn visit_literal_expression(
-        &self,
-        expression: &crate::expression::LiteralExpression,
-    ) -> Result<Object, Error> {
+    fn visit_literal_expression(&self, expression: &LiteralExpression) -> Result<Object, Error> {
         Ok(expression.value.clone())
     }
 
@@ -35,11 +53,14 @@ impl ExpressionVisitor<Object> for Interpreter {
     ) -> Result<Object, Error> {
         let right = self.evaluate(&expression.right)?;
 
-        match expression.operator.ttype {
+        let operator = &expression.operator;
+
+        match operator.ttype {
             TokenType::Minus => match right {
                 Object::Number(num) => Ok(Object::Number(-num)),
                 _ => Ok(Object::Nil),
             },
+
             TokenType::Bang => {
                 if self.is_truthy(right) {
                     Ok(Object::False)
@@ -47,7 +68,12 @@ impl ExpressionVisitor<Object> for Interpreter {
                     Ok(Object::True)
                 }
             }
-            _ => Ok(Object::Nil),
+
+            _ => Err(Error::new(
+                operator.line,
+                ErrorType::RuntimeError,
+                "Operator does not support unary operation",
+            )),
         }
     }
 
@@ -203,7 +229,11 @@ impl ExpressionVisitor<Object> for Interpreter {
                 )),
             },
 
-            _ => Ok(Object::Nil),
+            _ => Err(Error::new(
+                operator.line,
+                ErrorType::RuntimeError,
+                "Operator does not support binary opertaion",
+            )),
         }
     }
 

@@ -9,17 +9,6 @@ pub enum Expression {
     Grouping(GroupingExpression),
 }
 
-impl Expression {
-    pub fn accept<T>(&self, visitor: &dyn ExpressionVisitor<T>) -> Result<T, Error> {
-        match self {
-            Self::Literal(expression) => expression.accept(visitor),
-            Self::Unary(expression) => expression.accept(visitor),
-            Self::Binary(expression) => expression.accept(visitor),
-            Self::Grouping(expression) => expression.accept(visitor),
-        }
-    }
-}
-
 pub struct LiteralExpression {
     pub value: Object,
 }
@@ -37,6 +26,17 @@ pub struct BinaryExpression {
 
 pub struct GroupingExpression {
     pub expressions: Box<Expression>,
+}
+
+impl Expression {
+    pub fn accept<T>(&self, visitor: &dyn ExpressionVisitor<T>) -> Result<T, Error> {
+        match self {
+            Self::Literal(expression) => expression.accept(visitor),
+            Self::Unary(expression) => expression.accept(visitor),
+            Self::Binary(expression) => expression.accept(visitor),
+            Self::Grouping(expression) => expression.accept(visitor),
+        }
+    }
 }
 
 pub trait ExpressionVisitor<T> {

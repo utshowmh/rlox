@@ -121,6 +121,7 @@ impl Scanner {
             }
 
             '"' => self.make_string()?,
+
             _ => {
                 if self.is_digit(current_charecter) {
                     self.make_number();
@@ -236,7 +237,8 @@ impl Scanner {
             self.advance();
         }
         let identifier = self.source[self.start..self.current].to_string();
-        if let Some(_) = self.keywords.get(&identifier) {
+        if let Some(ttype) = self.keywords.get(&identifier) {
+            self.add_token_without_literal(ttype.clone());
             return;
         };
         self.add_token_without_literal(TokenType::Identifier);

@@ -156,10 +156,7 @@ impl Scanner {
     }
 
     fn is_match(&mut self, expected: char) -> bool {
-        if self.is_eof() {
-            return false;
-        };
-        if self.peek() != expected {
+        if self.is_eof() || self.peek() != expected {
             return false;
         };
 

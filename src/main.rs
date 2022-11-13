@@ -1,4 +1,5 @@
 mod error;
+mod expr;
 mod object;
 mod scanner;
 mod token;
@@ -17,12 +18,12 @@ fn main() -> io::Result<()> {
     let args: Vec<String> = args().collect();
 
     match args.len() {
-        1 => run_prompt()?,
+        1 => run_repl()?,
 
         2 => run_file(&args[1])?,
 
         _ => {
-            println!("Usage: rlox [script]");
+            eprintln!("Usage: rlox [script]");
             std::process::exit(64);
         }
     };
@@ -30,14 +31,15 @@ fn main() -> io::Result<()> {
     Ok(())
 }
 
-fn run_prompt() -> io::Result<()> {
+fn run_repl() -> io::Result<()> {
     let stdin = io::stdin();
     let mut stdout = io::stdout();
 
     let mut line = Default::default();
 
+    println!("welcome to rlox repl");
     loop {
-        print!("rlox :> ");
+        print!("rlox:> ");
         stdout.flush()?;
         if let Ok(_) = stdin.read_line(&mut line) {
             run(&line).unwrap_or_else(|err| {
@@ -68,7 +70,7 @@ fn run(source: &str) -> Result<(), Error> {
     let tokens = scanner.scan_tokens()?;
 
     for token in tokens {
-        println!("{:?}", token);
+        println!("{:?}", token.to_string());
     }
 
     Ok(())

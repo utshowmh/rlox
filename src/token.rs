@@ -1,7 +1,6 @@
 use crate::{object::Object, token_type::TokenType};
 
-#[allow(unused)]
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Token {
     ttype: TokenType,
     lexeme: String,
@@ -17,5 +16,12 @@ impl Token {
             literal,
             line,
         }
+    }
+
+    pub fn to_string(&self) -> String {
+        format!(
+            "Token: '{}' (object: {:?}) of type '{:?}' in line {}",
+            self.lexeme, self.literal, self.ttype, self.line
+        )
     }
 }

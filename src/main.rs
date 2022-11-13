@@ -1,3 +1,4 @@
+mod ast_printer;
 mod error;
 mod expr;
 mod object;

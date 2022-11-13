@@ -70,6 +70,20 @@ fn define_ast(output_dir: &str, base_name: &str, types: Vec<&str>) -> io::Result
     write!(file, "}}\n")?;
     write!(file, "\n")?;
 
+    /*
+    GOTTA GENERATE
+    impl Expr {
+        pub fn accept<T>(&self, visitor: &dyn ExprVisitor<T>) -> Result<T, Error> {
+            match self {
+                    Self::LiteralExpr(expr) => expr.accept(visitor),
+                    Self::UnaryExpr(expr) => expr.accept(visitor),
+                    Self::BinaryExpr(expr) => expr.accept(visitor),
+                    Self::GroupingExpr(expr) => expr.accept(visitor),
+                }
+            }
+        }
+    */
+
     for t in &tree_types {
         write!(file, "pub struct {} {{\n", t.struct_name)?;
         for f in &t.fields {

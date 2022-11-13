@@ -2,10 +2,10 @@ use crate::{object::Object, token_type::TokenType};
 
 #[derive(Clone)]
 pub struct Token {
-    ttype: TokenType,
-    lexeme: String,
-    literal: Object,
-    line: usize,
+    pub ttype: TokenType,
+    pub lexeme: String,
+    pub literal: Object,
+    pub line: usize,
 }
 
 impl Token {

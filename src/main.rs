@@ -77,7 +77,7 @@ fn run(source: &str) -> Result<(), Error> {
     let expr = parser.parse()?;
     let printer = AstPrinter {};
 
-    println!("{:?}", printer.stringify(&expr)?);
+    println!("{}", printer.stringify(&expr)?);
 
     Ok(())
 }

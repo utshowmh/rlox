@@ -2,7 +2,6 @@ use crate::error::Error;
 use crate::object::Object;
 use crate::token::Token;
 
-#[derive(Debug)]
 pub enum Expr {
     Literal(LiteralExpr),
     Unary(UnaryExpr),
@@ -21,25 +20,21 @@ impl Expr {
     }
 }
 
-#[derive(Debug)]
 pub struct LiteralExpr {
     pub value: Object,
 }
 
-#[derive(Debug)]
 pub struct UnaryExpr {
     pub operator: Token,
     pub right: Box<Expr>,
 }
 
-#[derive(Debug)]
 pub struct BinaryExpr {
     pub left: Box<Expr>,
     pub operator: Token,
     pub right: Box<Expr>,
 }
 
-#[derive(Debug)]
 pub struct GroupingExpr {
     pub exprs: Box<Expr>,
 }

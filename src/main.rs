@@ -1,6 +1,7 @@
-mod ast_printer;
+// mod ast_printer;
 mod error;
-mod expr;
+mod expression;
+mod interpreter;
 mod object;
 mod parser;
 mod scanner;
@@ -17,7 +18,7 @@ use error::Error;
 use parser::Parser;
 use scanner::Scanner;
 
-use crate::ast_printer::AstPrinter;
+use crate::interpreter::Interpreter;
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = args().collect();
@@ -74,10 +75,11 @@ fn run(source: &str) -> Result<(), Error> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens()?;
     let mut parser = Parser::new(tokens);
-    let expr = parser.parse()?;
-    let printer = AstPrinter {};
+    let expression = parser.parse()?;
+    let interpreter = Interpreter {};
+    let value = interpreter.interpret(&expression)?;
 
-    println!("{}", printer.stringify(&expr)?);
+    println!("{}", value);
 
     Ok(())
 }

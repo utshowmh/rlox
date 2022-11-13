@@ -1,6 +1,11 @@
 use std::collections::HashMap;
 
-use crate::{error::Error, object::Object, token::Token, token_type::TokenType};
+use crate::{
+    error::{Error, ErrorType},
+    object::Object,
+    token::Token,
+    token_type::TokenType,
+};
 
 pub struct Scanner {
     source: String,
@@ -122,7 +127,11 @@ impl Scanner {
                 } else if self.is_alpha(current_charecter) {
                     self.make_identifier();
                 } else {
-                    return Err(Error::new(self.line, "Invalid charecter"));
+                    return Err(Error::new(
+                        self.line,
+                        ErrorType::LexingError,
+                        "Invalid charecter",
+                    ));
                 }
             }
         };
@@ -188,7 +197,11 @@ impl Scanner {
     fn multiline_comment(&mut self) -> Result<(), Error> {
         loop {
             if self.is_eof() {
-                return Err(Error::new(self.line, "Unterminated comment"));
+                return Err(Error::new(
+                    self.line,
+                    ErrorType::LexingError,
+                    "Unterminated comment",
+                ));
             }
 
             match self.peek() {
@@ -252,7 +265,11 @@ impl Scanner {
         }
 
         if self.is_eof() {
-            return Err(Error::new(self.line, "Unterminated String"));
+            return Err(Error::new(
+                self.line,
+                ErrorType::LexingError,
+                "Unterminated String",
+            ));
         }
 
         self.advance(); // covering up the ending qoute

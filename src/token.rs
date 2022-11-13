@@ -14,7 +14,7 @@ impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Token: {} of type {:?} (Object: {}) in line {}",
+            "Token: '{}' of type '{}' (Object: {}) in line {}",
             self.lexeme, self.ttype, self.literal, self.line
         )
     }

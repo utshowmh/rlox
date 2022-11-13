@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum Object {
     Number(f64),
     String(String),

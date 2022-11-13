@@ -1,6 +1,8 @@
 use crate::{
-    error::Error,
-    expr::{BinaryExpr, Expr, GroupingExpr, LiteralExpr, UnaryExpr},
+    error::{Error, ErrorType},
+    expression::{
+        BinaryExpression, Expression, GroupingExpression, LiteralExpression, UnaryExpression,
+    },
     object::Object,
     token::Token,
     token_type::TokenType,
@@ -16,28 +18,36 @@ impl Parser {
         Self { tokens, current: 0 }
     }
 
-    pub fn parse(&mut self) -> Result<Expr, Error> {
-        self.exprs()
+    pub fn parse(&mut self) -> Result<Expression, Error> {
+        self.expressions()
     }
 
-    fn exprs(&mut self) -> Result<Expr, Error> {
+    fn expressions(&mut self) -> Result<Expression, Error> {
+        // let mut expression = self.equality()?;
+
+        // while self.does_match(&[TokenType::Comma]) {
+        //     expression = self.equality()?;
+        // }
+
+        // Ok(expression)
+
         self.equality()
     }
 
-    fn equality(&mut self) -> Result<Expr, Error> {
-        let mut expr = self.comparison()?;
+    fn equality(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.comparison()?;
 
         while self.does_match(&[TokenType::BangEqual, TokenType::EqualEqual]) {
             let operator = self.previous();
             let right = self.comparison()?;
-            expr = Expr::Binary(BinaryExpr::new(expr, operator, right));
+            expression = Expression::Binary(BinaryExpression::new(expression, operator, right));
         }
 
-        Ok(expr)
+        Ok(expression)
     }
 
-    fn comparison(&mut self) -> Result<Expr, Error> {
-        let mut expr = self.term()?;
+    fn comparison(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.term()?;
 
         while self.does_match(&[
             TokenType::Greater,
@@ -47,67 +57,69 @@ impl Parser {
         ]) {
             let operator = self.previous();
             let right = self.term()?;
-            expr = Expr::Binary(BinaryExpr::new(expr, operator, right));
+            expression = Expression::Binary(BinaryExpression::new(expression, operator, right));
         }
 
-        return Ok(expr);
+        return Ok(expression);
     }
 
-    fn term(&mut self) -> Result<Expr, Error> {
-        let mut expr = self.factor()?;
+    fn term(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.factor()?;
 
         while self.does_match(&[TokenType::Minus, TokenType::Plus]) {
             let operator = self.previous();
             let right = self.factor()?;
-            expr = Expr::Binary(BinaryExpr::new(expr, operator, right));
+            expression = Expression::Binary(BinaryExpression::new(expression, operator, right));
         }
 
-        return Ok(expr);
+        return Ok(expression);
     }
 
-    fn factor(&mut self) -> Result<Expr, Error> {
-        let mut expr = self.unary()?;
+    fn factor(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.unary()?;
 
         while self.does_match(&[TokenType::Star, TokenType::Slash]) {
             let operator = self.previous();
             let right = self.unary()?;
-            expr = Expr::Binary(BinaryExpr::new(expr, operator, right));
+            expression = Expression::Binary(BinaryExpression::new(expression, operator, right));
         }
 
-        return Ok(expr);
+        return Ok(expression);
     }
 
-    fn unary(&mut self) -> Result<Expr, Error> {
+    fn unary(&mut self) -> Result<Expression, Error> {
         if self.does_match(&[TokenType::Bang, TokenType::Minus]) {
             let operator = self.previous();
             let right = self.unary()?;
-            Ok(Expr::Unary(UnaryExpr::new(operator, right)))
+            Ok(Expression::Unary(UnaryExpression::new(operator, right)))
         } else {
             self.primary()
         }
     }
 
-    fn primary(&mut self) -> Result<Expr, Error> {
+    fn primary(&mut self) -> Result<Expression, Error> {
         if self.does_match(&[TokenType::True]) {
-            return Ok(Expr::Literal(LiteralExpr::new(Object::True)));
+            return Ok(Expression::Literal(LiteralExpression::new(Object::True)));
         }
 
         if self.does_match(&[TokenType::False]) {
-            return Ok(Expr::Literal(LiteralExpr::new(Object::False)));
+            return Ok(Expression::Literal(LiteralExpression::new(Object::False)));
         }
 
         if self.does_match(&[TokenType::Nil]) {
-            return Ok(Expr::Literal(LiteralExpr::new(Object::Nil)));
+            return Ok(Expression::Literal(LiteralExpression::new(Object::Nil)));
         }
 
         if self.does_match(&[TokenType::Number, TokenType::String]) {
-            return Ok(Expr::Literal(LiteralExpr::new(self.previous().literal)));
+            return Ok(Expression::Literal(LiteralExpression::new(
+                self.previous().literal,
+            )));
         }
 
         if self.does_match(&[TokenType::LeftParen]) {
-            let expr = self.exprs()?;
-            self.consume(TokenType::RightParen, "Expect ')' after expression")?;
-            return Ok(Expr::Grouping(GroupingExpr::new(expr)));
+            let expression = self.expressions()?;
+            self.consume(TokenType::RightParen, "Expect ')' after expressionession")?;
+            return Ok(Expression::Grouping(GroupingExpression::new(expression)));
         }
 
         Err(self.parse_error("Does not support this token as primary"))
@@ -186,6 +198,6 @@ impl Parser {
     // }
 
     fn parse_error(&mut self, message: &str) -> Error {
-        Error::new(self.peek().line, &format!("ParseError -> {}", message))
+        Error::new(self.peek().line, ErrorType::ParsingError, message)
     }
 }

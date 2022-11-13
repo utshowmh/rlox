@@ -1,20 +1,27 @@
 use crate::{
     error::Error,
-    expr::{BinaryExpr, Expr, ExprVisitor, GroupingExpr, LiteralExpr, UnaryExpr},
+    expression::{
+        BinaryExpression, Expression, ExpressionVisitor, GroupingExpression, LiteralExpression,
+        UnaryExpression,
+    },
 };
 
 pub struct AstPrinter {}
 
 impl AstPrinter {
-    pub fn stringify(&self, expr: &Expr) -> Result<String, Error> {
-        expr.accept(self)
+    pub fn stringify(&self, expression: &Expression) -> Result<String, Error> {
+        expression.accept(self)
     }
 
-    fn parenthesize(&self, operator_lexeme: &str, exprs: &[&Box<Expr>]) -> Result<String, Error> {
+    fn parenthesize(
+        &self,
+        operator_lexeme: &str,
+        expressions: &[&Box<Expression>],
+    ) -> Result<String, Error> {
         let mut builder = format!("({}", operator_lexeme);
 
-        for expr in exprs {
-            builder = format!("{} {}", builder, expr.accept(self)?);
+        for expression in expressions {
+            builder = format!("{} {}", builder, expression.accept(self)?);
         }
 
         builder = format!("{})", builder);
@@ -23,20 +30,23 @@ impl AstPrinter {
     }
 }
 
-impl ExprVisitor<String> for AstPrinter {
-    fn visit_literal_expr(&self, expr: &LiteralExpr) -> Result<String, Error> {
-        Ok(format!("{}", expr.value))
+impl ExpressionVisitor<String> for AstPrinter {
+    fn visit_literal_expression(&self, expression: &LiteralExpression) -> Result<String, Error> {
+        Ok(format!("{}", expression.value))
     }
 
-    fn visit_unary_expr(&self, expr: &UnaryExpr) -> Result<String, Error> {
-        self.parenthesize(&expr.operator.lexeme, &[&expr.right])
+    fn visit_unary_expression(&self, expression: &UnaryExpression) -> Result<String, Error> {
+        self.parenthesize(&expression.operator.lexeme, &[&expression.right])
     }
 
-    fn visit_binary_expr(&self, expr: &BinaryExpr) -> Result<String, Error> {
-        self.parenthesize(&expr.operator.lexeme, &[&expr.left, &expr.right])
+    fn visit_binary_expression(&self, expression: &BinaryExpression) -> Result<String, Error> {
+        self.parenthesize(
+            &expression.operator.lexeme,
+            &[&expression.left, &expression.right],
+        )
     }
 
-    fn visit_grouping_expr(&self, expr: &GroupingExpr) -> Result<String, Error> {
-        self.parenthesize("group", &[&expr.exprs])
+    fn visit_grouping_expression(&self, expression: &GroupingExpression) -> Result<String, Error> {
+        self.parenthesize("group", &[&expression.expressions])
     }
 }

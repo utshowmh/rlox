@@ -1,4 +1,5 @@
 // mod ast_printer;
+mod environment;
 mod error;
 mod expression;
 mod interpreter;
@@ -77,7 +78,7 @@ fn run(source: &str) -> Result<(), Error> {
     let tokens = scanner.scan_tokens()?;
     let mut parser = Parser::new(tokens);
     let statemets = parser.parse()?;
-    let interpreter = Interpreter {};
+    let mut interpreter = Interpreter::new();
     interpreter.interpret(&statemets)?;
 
     Ok(())

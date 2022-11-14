@@ -7,6 +7,7 @@ pub enum Expression {
     Unary(UnaryExpression),
     Binary(BinaryExpression),
     Grouping(GroupingExpression),
+    VariableExpression(VariableExpression),
 }
 
 pub struct LiteralExpression {
@@ -28,6 +29,10 @@ pub struct GroupingExpression {
     pub expressions: Box<Expression>,
 }
 
+pub struct VariableExpression {
+    pub identifier: Token,
+}
+
 impl Expression {
     pub fn accept<T>(&self, visitor: &dyn ExpressionVisitor<T>) -> Result<T, Error> {
         match self {
@@ -35,6 +40,7 @@ impl Expression {
             Self::Unary(expression) => expression.accept(visitor),
             Self::Binary(expression) => expression.accept(visitor),
             Self::Grouping(expression) => expression.accept(visitor),
+            Self::VariableExpression(expression) => expression.accept(visitor),
         }
     }
 }
@@ -44,6 +50,7 @@ pub trait ExpressionVisitor<T> {
     fn visit_unary_expression(&self, expression: &UnaryExpression) -> Result<T, Error>;
     fn visit_binary_expression(&self, expression: &BinaryExpression) -> Result<T, Error>;
     fn visit_grouping_expression(&self, expression: &GroupingExpression) -> Result<T, Error>;
+    fn visit_variable_expression(&self, expression: &VariableExpression) -> Result<T, Error>;
 }
 
 impl LiteralExpression {
@@ -92,5 +99,15 @@ impl GroupingExpression {
 
     pub fn accept<T>(&self, visitor: &dyn ExpressionVisitor<T>) -> Result<T, Error> {
         visitor.visit_grouping_expression(self)
+    }
+}
+
+impl VariableExpression {
+    pub fn new(identifier: Token) -> Self {
+        Self { identifier }
+    }
+
+    pub fn accept<T>(&self, visitor: &dyn ExpressionVisitor<T>) -> Result<T, Error> {
+        visitor.visit_variable_expression(self)
     }
 }

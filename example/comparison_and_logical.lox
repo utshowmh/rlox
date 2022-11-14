@@ -1,11 +1,14 @@
 // comparison and logical operators
 
-print 420 == 69;                // false
-print 420 != 69;                // true
-print 420 > 69;                 // true
-print 420 >= 69;                // true
-print 420 < 69;                 // false
-print 420 <= 69;                // false
+var x = 420;
+var y = 69;
+
+print x == y;                   // false
+print x != y;                   // true
+print x > y;                    // true
+print x >= y;                   // true
+print x < y;                    // false
+print x <= y;                   // false
 print "utsho" == "utsho";       // true
 print "utsho" != "utsho";       // false
 print true == true;             // true

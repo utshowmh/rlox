@@ -1,0 +1,5 @@
+// variables
+
+var name = "utsho";
+
+print "hello, " + name;

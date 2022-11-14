@@ -1,4 +1,5 @@
 use crate::{
+    environment::Environment,
     error::{Error, ErrorType},
     expression::{Expression, ExpressionVisitor, LiteralExpression},
     object::Object,
@@ -6,17 +7,25 @@ use crate::{
     token_type::TokenType,
 };
 
-pub struct Interpreter {}
+pub struct Interpreter {
+    environment: Environment,
+}
 
 impl Interpreter {
-    pub fn interpret(&self, statements: &[Statement]) -> Result<(), Error> {
+    pub fn new() -> Self {
+        Self {
+            environment: Environment::new(),
+        }
+    }
+
+    pub fn interpret(&mut self, statements: &[Statement]) -> Result<(), Error> {
         for statement in statements {
             self.execute(statement)?;
         }
         Ok(())
     }
 
-    fn execute(&self, statement: &Statement) -> Result<Object, Error> {
+    fn execute(&mut self, statement: &Statement) -> Result<Object, Error> {
         statement.accept(self)
     }
 
@@ -38,6 +47,16 @@ impl StatementVisitor<Object> for Interpreter {
     fn visit_print_statement(&self, statement: &PrintStatement) -> Result<Object, Error> {
         let value = self.evaluate(&statement.expression)?;
         println!("{}", value);
+        Ok(value)
+    }
+
+    fn visit_variable_statement(
+        &mut self,
+        expression: &crate::statement::VariableStatement,
+    ) -> Result<Object, Error> {
+        let value = self.evaluate(&expression.initializer)?;
+        self.environment
+            .define(&expression.identifier.lexeme, value.clone());
         Ok(value)
     }
 }
@@ -242,5 +261,12 @@ impl ExpressionVisitor<Object> for Interpreter {
         expression: &crate::expression::GroupingExpression,
     ) -> Result<Object, Error> {
         Ok(self.evaluate(&expression.expressions)?)
+    }
+
+    fn visit_variable_expression(
+        &self,
+        expression: &crate::expression::VariableExpression,
+    ) -> Result<Object, Error> {
+        self.environment.access(&expression.identifier)
     }
 }

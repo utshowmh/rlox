@@ -2,9 +2,10 @@ use crate::{
     error::{Error, ErrorType},
     expression::{
         BinaryExpression, Expression, GroupingExpression, LiteralExpression, UnaryExpression,
+        VariableExpression,
     },
     object::Object,
-    statement::{ExpressionStatement, PrintStatement, Statement},
+    statement::{ExpressionStatement, PrintStatement, Statement, VariableStatement},
     token::Token,
     token_type::TokenType,
 };
@@ -23,10 +24,34 @@ impl Parser {
         let mut statements = Vec::new();
 
         while !self.is_at_end() {
-            statements.push(self.statement()?);
+            statements.push(self.declaration()?);
         }
 
         Ok(statements)
+    }
+
+    fn declaration(&mut self) -> Result<Statement, Error> {
+        if self.does_match(&[TokenType::Var]) {
+            self.var_declaration()
+        } else {
+            self.statement()
+        }
+    }
+
+    fn var_declaration(&mut self) -> Result<Statement, Error> {
+        let name = self.consume(TokenType::Identifier, "Expect identifier")?;
+        let mut initializer = None;
+
+        if self.does_match(&[TokenType::Equal]) {
+            initializer = Some(self.expression()?);
+        }
+
+        self.consume(TokenType::Semicolon, "Expect ';' after declaration")?;
+
+        Ok(Statement::VariableStatement(VariableStatement::new(
+            name,
+            initializer,
+        )))
     }
 
     fn statement(&mut self) -> Result<Statement, Error> {
@@ -38,7 +63,7 @@ impl Parser {
     }
 
     fn print_statement(&mut self) -> Result<Statement, Error> {
-        let value = self.expressions()?;
+        let value = self.expression()?;
 
         self.consume(TokenType::Semicolon, "Expect ';' after value")?;
 
@@ -46,7 +71,7 @@ impl Parser {
     }
 
     fn expression_statement(&mut self) -> Result<Statement, Error> {
-        let value = self.expressions()?;
+        let value = self.expression()?;
 
         self.consume(TokenType::Semicolon, "Expect ';' after value")?;
 
@@ -55,7 +80,7 @@ impl Parser {
         )))
     }
 
-    fn expressions(&mut self) -> Result<Expression, Error> {
+    fn expression(&mut self) -> Result<Expression, Error> {
         self.equality()
     }
 
@@ -141,8 +166,14 @@ impl Parser {
             )));
         }
 
+        if self.does_match(&[TokenType::Identifier]) {
+            return Ok(Expression::VariableExpression(VariableExpression::new(
+                self.previous(),
+            )));
+        }
+
         if self.does_match(&[TokenType::LeftParen]) {
-            let expression = self.expressions()?;
+            let expression = self.expression()?;
             self.consume(TokenType::RightParen, "Expect ')' after expressionession")?;
             return Ok(Expression::Grouping(GroupingExpression::new(expression)));
         }

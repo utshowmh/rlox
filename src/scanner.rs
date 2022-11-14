@@ -79,9 +79,9 @@ impl Scanner {
             '*' => self.add_token_without_literal(TokenType::Star),
 
             '/' => {
-                if self.is_match('/') {
+                if self.does_match('/') {
                     self.comment();
-                } else if self.is_match('*') {
+                } else if self.does_match('*') {
                     self.multiline_comment()?;
                 } else {
                     self.add_token_without_literal(TokenType::Slash);
@@ -89,7 +89,7 @@ impl Scanner {
             }
 
             '!' => {
-                if self.is_match('=') {
+                if self.does_match('=') {
                     self.add_token_without_literal(TokenType::BangEqual);
                 } else {
                     self.add_token_without_literal(TokenType::Bang);
@@ -97,7 +97,7 @@ impl Scanner {
             }
 
             '=' => {
-                if self.is_match('=') {
+                if self.does_match('=') {
                     self.add_token_without_literal(TokenType::EqualEqual);
                 } else {
                     self.add_token_without_literal(TokenType::Equal);
@@ -105,7 +105,7 @@ impl Scanner {
             }
 
             '<' => {
-                if self.is_match('=') {
+                if self.does_match('=') {
                     self.add_token_without_literal(TokenType::LessEqual);
                 } else {
                     self.add_token_without_literal(TokenType::Less);
@@ -113,7 +113,7 @@ impl Scanner {
             }
 
             '>' => {
-                if self.is_match('=') {
+                if self.does_match('=') {
                     self.add_token_without_literal(TokenType::GreaterEqual);
                 } else {
                     self.add_token_without_literal(TokenType::Greater);
@@ -165,7 +165,7 @@ impl Scanner {
         return self.source_as_vec[self.current + 1] as char;
     }
 
-    fn is_match(&mut self, expected: char) -> bool {
+    fn does_match(&mut self, expected: char) -> bool {
         if self.is_eof() || self.peek() != expected {
             return false;
         };
@@ -208,14 +208,14 @@ impl Scanner {
             match self.peek() {
                 '*' => {
                     self.advance();
-                    if self.is_match('/') {
+                    if self.does_match('/') {
                         return Ok(());
                     }
                 }
 
                 '/' => {
                     self.advance();
-                    if self.is_match('*') {
+                    if self.does_match('*') {
                         self.multiline_comment()?;
                     }
                 }

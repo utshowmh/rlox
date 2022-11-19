@@ -5,7 +5,9 @@ use crate::{
         VariableExpression,
     },
     object::Object,
-    statement::{ExpressionStatement, PrintStatement, Statement, VariableStatement},
+    statement::{
+        BlockStatement, ExpressionStatement, PrintStatement, Statement, VariableStatement,
+    },
     token::Token,
     token_type::TokenType,
 };
@@ -33,9 +35,22 @@ impl Parser {
     fn declaration(&mut self) -> Result<Statement, Error> {
         if self.does_match(&[TokenType::Var]) {
             self.var_declaration()
+        } else if self.does_match(&[TokenType::LeftBrace]) {
+            self.block()
         } else {
             self.statement()
         }
+    }
+
+    fn block(&mut self) -> Result<Statement, Error> {
+        let mut statements = Vec::new();
+
+        while !self.check(&TokenType::RightBrace) && !self.is_at_end() {
+            statements.push(self.declaration()?);
+        }
+        self.consume(TokenType::RightBrace, "Expect '}' after block")?;
+
+        Ok(Statement::BlockStatement(BlockStatement::new(statements)))
     }
 
     fn var_declaration(&mut self) -> Result<Statement, Error> {

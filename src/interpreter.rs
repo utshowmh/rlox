@@ -3,7 +3,7 @@ use crate::{
     error::{Error, ErrorType},
     expression::{Expression, ExpressionVisitor, LiteralExpression},
     object::Object,
-    statement::{ExpressionStatement, PrintStatement, Statement, StatementVisitor},
+    statement::{self, ExpressionStatement, PrintStatement, Statement, StatementVisitor},
     token_type::TokenType,
 };
 
@@ -29,6 +29,22 @@ impl Interpreter {
         statement.accept(self)
     }
 
+    fn execute_block(
+        &mut self,
+        statements: &Vec<Statement>,
+        environment: Environment,
+    ) -> Result<Object, Error> {
+        let previous = self.environment.clone();
+
+        self.environment = environment;
+        for statement in statements {
+            self.execute(statement)?;
+        }
+        self.environment = previous;
+
+        Ok(Object::Nil)
+    }
+
     fn evaluate(&self, expression: &Expression) -> Result<Object, Error> {
         expression.accept(self)
     }
@@ -52,12 +68,19 @@ impl StatementVisitor<Object> for Interpreter {
 
     fn visit_variable_statement(
         &mut self,
-        expression: &crate::statement::VariableStatement,
+        expression: &statement::VariableStatement,
     ) -> Result<Object, Error> {
         let value = self.evaluate(&expression.initializer)?;
         self.environment
             .define(&expression.identifier.lexeme, value.clone());
         Ok(value)
+    }
+
+    fn visit_block_statement(
+        &mut self,
+        statement: &statement::BlockStatement,
+    ) -> Result<Object, Error> {
+        self.execute_block(&statement.statements, Environment::new())
     }
 }
 

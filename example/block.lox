@@ -1,0 +1,10 @@
+// block
+
+var name = "utsho";
+
+{
+    var name = "alegria";
+    print name;
+}
+
+print name;

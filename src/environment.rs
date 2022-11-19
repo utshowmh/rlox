@@ -6,6 +6,7 @@ use crate::{
     token::Token,
 };
 
+#[derive(Clone)]
 pub struct Environment {
     values: HashMap<String, Object>,
 }

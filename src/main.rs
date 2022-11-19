@@ -1,26 +1,13 @@
-// mod ast_printer;
-mod environment;
-mod error;
-mod expression;
-mod interpreter;
-mod object;
-mod parser;
-mod scanner;
-mod statement;
-mod token;
-mod token_type;
-
 use std::{
     env::args,
     fs::read_to_string,
     io::{self, Write},
 };
 
-use error::Error;
-use parser::Parser;
-use scanner::Scanner;
-
-use crate::interpreter::Interpreter;
+use rlox::error::Error;
+use rlox::interpreter::Interpreter;
+use rlox::parser::Parser;
+use rlox::scanner::Scanner;
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = args().collect();

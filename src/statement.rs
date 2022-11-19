@@ -7,6 +7,7 @@ pub enum Statement {
     VariableStatement(VariableStatement),
     ExpressionStatement(ExpressionStatement),
     PrintStatement(PrintStatement),
+    BlockStatement(BlockStatement),
 }
 
 pub struct VariableStatement {
@@ -16,6 +17,10 @@ pub struct VariableStatement {
 
 pub struct ExpressionStatement {
     pub expression: Expression,
+}
+
+pub struct BlockStatement {
+    pub statements: Vec<Statement>,
 }
 
 pub struct PrintStatement {
@@ -40,14 +45,16 @@ impl Statement {
             Self::VariableStatement(statement) => statement.accept(visitor),
             Self::ExpressionStatement(statement) => statement.accept(visitor),
             Self::PrintStatement(statement) => statement.accept(visitor),
+            Self::BlockStatement(statement) => statement.accept(visitor),
         }
     }
 }
 
 pub trait StatementVisitor<T> {
-    fn visit_expression_statement(&self, expression: &ExpressionStatement) -> Result<T, Error>;
-    fn visit_print_statement(&self, expression: &PrintStatement) -> Result<T, Error>;
-    fn visit_variable_statement(&mut self, expression: &VariableStatement) -> Result<T, Error>;
+    fn visit_expression_statement(&self, statement: &ExpressionStatement) -> Result<T, Error>;
+    fn visit_print_statement(&self, statement: &PrintStatement) -> Result<T, Error>;
+    fn visit_variable_statement(&mut self, statement: &VariableStatement) -> Result<T, Error>;
+    fn visit_block_statement(&mut self, statement: &BlockStatement) -> Result<T, Error>;
 }
 
 impl VariableStatement {
@@ -61,6 +68,16 @@ impl VariableStatement {
 
     fn accept<T>(&self, visitor: &mut dyn StatementVisitor<T>) -> Result<T, Error> {
         visitor.visit_variable_statement(self)
+    }
+}
+
+impl BlockStatement {
+    pub fn new(statements: Vec<Statement>) -> Self {
+        Self { statements }
+    }
+
+    fn accept<T>(&self, visitor: &mut dyn StatementVisitor<T>) -> Result<T, Error> {
+        visitor.visit_block_statement(self)
     }
 }
 

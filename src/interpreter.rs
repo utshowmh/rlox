@@ -3,7 +3,10 @@ use crate::{
     error::{Error, ErrorType},
     expression::{Expression, ExpressionVisitor, LiteralExpression},
     object::Object,
-    statement::{self, ExpressionStatement, PrintStatement, Statement, StatementVisitor},
+    statement::{
+        BlockStatement, ExpressionStatement, IfStatement, PrintStatement, Statement,
+        StatementVisitor, VariableStatement,
+    },
     token_type::TokenType,
 };
 
@@ -63,7 +66,7 @@ impl StatementVisitor<Object> for Interpreter {
 
     fn visit_variable_statement(
         &mut self,
-        expression: &statement::VariableStatement,
+        expression: &VariableStatement,
     ) -> Result<Object, Error> {
         let value = self.evaluate(&expression.initializer)?;
         self.environment
@@ -71,11 +74,20 @@ impl StatementVisitor<Object> for Interpreter {
         Ok(value)
     }
 
-    fn visit_block_statement(
-        &mut self,
-        statement: &statement::BlockStatement,
-    ) -> Result<Object, Error> {
+    fn visit_block_statement(&mut self, statement: &BlockStatement) -> Result<Object, Error> {
         self.execute_block(&statement.statements)
+    }
+
+    fn visit_if_statement(&mut self, statement: &IfStatement) -> Result<Object, Error> {
+        if self.is_truthy(self.evaluate(&statement.conditional)?) {
+            self.execute(&statement.then_branch)
+        } else {
+            if let Some(else_branch) = &statement.else_branch {
+                self.execute(else_branch)
+            } else {
+                Ok(Object::Nil)
+            }
+        }
     }
 }
 

@@ -6,7 +6,8 @@ use crate::{
     },
     object::Object,
     statement::{
-        BlockStatement, ExpressionStatement, PrintStatement, Statement, VariableStatement,
+        BlockStatement, ExpressionStatement, IfStatement, PrintStatement, Statement,
+        VariableStatement,
     },
     token::Token,
     token_type::TokenType,
@@ -35,11 +36,37 @@ impl Parser {
     fn declaration(&mut self) -> Result<Statement, Error> {
         if self.does_match(&[TokenType::Var]) {
             self.var_declaration()
-        } else if self.does_match(&[TokenType::LeftBrace]) {
-            self.block()
         } else {
             self.statement()
         }
+    }
+
+    fn statement(&mut self) -> Result<Statement, Error> {
+        if self.does_match(&[TokenType::Print]) {
+            self.print_statement()
+        } else if self.does_match(&[TokenType::LeftBrace]) {
+            self.block()
+        } else if self.does_match(&[TokenType::If]) {
+            self.if_statement()
+        } else {
+            self.expression_statement()
+        }
+    }
+
+    fn if_statement(&mut self) -> Result<Statement, Error> {
+        self.consume(TokenType::LeftParen, "Expect '(' after 'if'")?;
+        let conditional = self.expression()?;
+        self.consume(TokenType::RightParen, "Expect ')' after condition")?;
+        let then_branch = self.statement()?;
+        let mut else_branch = None;
+        if self.does_match(&[TokenType::Else]) {
+            else_branch = Some(self.statement()?);
+        }
+        Ok(Statement::IfStatement(IfStatement::new(
+            conditional,
+            then_branch,
+            else_branch,
+        )))
     }
 
     fn block(&mut self) -> Result<Statement, Error> {
@@ -67,14 +94,6 @@ impl Parser {
             name,
             initializer,
         )))
-    }
-
-    fn statement(&mut self) -> Result<Statement, Error> {
-        if self.does_match(&[TokenType::Print]) {
-            self.print_statement()
-        } else {
-            self.expression_statement()
-        }
     }
 
     fn print_statement(&mut self) -> Result<Statement, Error> {

@@ -1,0 +1,9 @@
+// if statement
+
+var x = false;
+
+if (x) {
+    print "x";
+} else {
+    print "!x";
+}

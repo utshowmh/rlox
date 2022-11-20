@@ -1,8 +1,9 @@
-// block
+// variable scop and code block
 
 var name = "utsho";
 
 {
+    print name;
     var name = "alegria";
     print name;
 }

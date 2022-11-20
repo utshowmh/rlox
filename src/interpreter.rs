@@ -29,14 +29,9 @@ impl Interpreter {
         statement.accept(self)
     }
 
-    fn execute_block(
-        &mut self,
-        statements: &Vec<Statement>,
-        environment: Environment,
-    ) -> Result<Object, Error> {
+    fn execute_block(&mut self, statements: &Vec<Statement>) -> Result<Object, Error> {
         let previous = self.environment.clone();
 
-        self.environment = environment;
         for statement in statements {
             self.execute(statement)?;
         }
@@ -80,7 +75,7 @@ impl StatementVisitor<Object> for Interpreter {
         &mut self,
         statement: &statement::BlockStatement,
     ) -> Result<Object, Error> {
-        self.execute_block(&statement.statements, Environment::new())
+        self.execute_block(&statement.statements)
     }
 }
 

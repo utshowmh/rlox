@@ -6,7 +6,6 @@ use crate::{
     token::Token,
 };
 
-#[derive(Clone)]
 pub struct Environment {
     values: HashMap<String, Object>,
 }
@@ -15,6 +14,12 @@ impl Environment {
     pub fn new() -> Self {
         Self {
             values: HashMap::new(),
+        }
+    }
+
+    pub fn clone(&self) -> Self {
+        Self {
+            values: self.values.clone(),
         }
     }
 
